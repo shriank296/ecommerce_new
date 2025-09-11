@@ -1,0 +1,20 @@
+[project]
+name = "app"
+version = "0.1.0"
+description = "new basic python template"
+authors = [
+    {name = "Ankur Shrivastava"}
+]
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "fastapi (>=0.116.1,<0.117.0)",
+    "uvicorn (>=0.35.0,<0.36.0)"
+]
+
+[tool.poetry]
+package-mode = false
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"
