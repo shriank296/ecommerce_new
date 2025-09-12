@@ -1,0 +1,55 @@
+# =====================
+# Python
+# =====================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# =====================
+# Environment
+# =====================
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+.env/
+
+# =====================
+# Unit tests / Coverage
+# =====================
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+pytest_cache/
+.pytest_cache/
+.coverage.json
+*.cover
+*.py,cover
+
+# Test output
+test-results/
+*.log
+
+# =====================
+# Linter / Formatter / Type checker caches
+# =====================
+# Ruff
+.ruff-cache/
+
+# Black
+.black/
+
+# Mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# isort
+.isort.cfg

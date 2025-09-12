@@ -9,11 +9,25 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "fastapi (>=0.116.1,<0.117.0)",
-    "uvicorn (>=0.35.0,<0.36.0)"
+    "uvicorn (>=0.35.0,<0.36.0)",
+    "psycopg2-binary (>=2.9.10,<3.0.0)",
+    "python-json-logger (>=3.3.0,<4.0.0)",
+    "sqlalchemy (>=2.0.43,<3.0.0)",
 ]
 
 [tool.poetry]
 package-mode = false
+
+[tool.poetry.group.dev.dependencies]
+pre-commit = "^4.3.0"
+ruff = "^0.13.0"
+mypy = "^1.18.1"
+pydocstyle = "^6.3.0"
+import-linter = "^2.4"
+opentelemetry-sdk = "^1.37.0"
+isort = "^6.0.1"
+pyupgrade = "^3.20.0"
+black = "^25.1.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

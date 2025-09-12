@@ -1,0 +1,69 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      - id: end-of-file-fixer #Trims end of files.
+        exclude: ^infra/
+      - id: debug-statements # Checks for breakpoint() + debuggers
+      - id: check-merge-conflict #Checks for merge conflict strings
+      - id: check-toml #Checks toml parsibility.
+        exclude: ^infra/
+      - id: check-yaml #Checks yaml parsibility
+        args: [--allow-multiple-documents]
+        exclude: ^infra/
+  - repo: https://github.com/psf/black
+    rev: 24.8.0
+    hooks:
+      - id: black
+        language_version: python3.13
+  - repo: local
+    hooks:
+      - id: pyupgrade
+        name: pyupgrade check
+        entry: bash -c "cd source/api && poetry run pyupgrade --py312-plus ./**/*.py" 
+        language: system
+        files: "^source/"
+        pass_filenames: false
+      - id: isort
+        name: sort imports
+        entry: bash -c "cd source/api && poetry run isort --profile black ."      
+        language: system
+        files: "^source/"
+        pass_filenames: false
+      - id: ruff
+        name: ruff check fix
+        entry: bash -c "cd source/api && poetry run ruff check . --fix"
+        language: system
+        files: "^source/"
+        pass_filenames: false
+      - id: mypy
+        name: mypy check types
+        verbose: true
+        entry: bash -c "cd source/api && poetry run mypy app"
+        language: system
+        files: "^source/"
+        pass_filenames: false 
+      # - id: pydocstyle
+      #   name: validate docstrings
+      #   entry: bash -c "cd source/api && poetry run pydocstyle app"
+      #   language: system
+      #   files: "^source/"
+      #   pass_filenames: false
+      # - id: hadolint
+      #   name: hadolint dockerfile
+      #   entry: bash -c "cd source/api && poetry run hadolint Dockerfile"
+      #   language: system
+      #   files: "^source/"
+      #   pass_filenames: false   
+      # - id: lint-imports
+      #   name: validate imports
+      #   entry: bash -c "cd source/api && poetry run lint-imports"
+      #   language: system
+      #   files: "^source/"
+      #   pass_filenames: false  
+      # - id: openapi
+      #   name: validate openapi spec
+      #   entry: bash -c "cd source/api && poetry run ./scripts"
+      #   language: system
+      #   files: "^source/"
+      #   pass_filenames: false     
