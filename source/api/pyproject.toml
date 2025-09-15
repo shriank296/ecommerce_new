@@ -30,6 +30,7 @@ opentelemetry-sdk = "^1.37.0"
 isort = "^6.0.1"
 pyupgrade = "^3.20.0"
 black = "^25.1.0"
+alembic = "^1.16.5"
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
