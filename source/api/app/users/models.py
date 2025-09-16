@@ -21,6 +21,8 @@ class UserRole(Enum):
 
 
 class User(Base, CreatedMixin, UpdateMixin):
+    __tablename__ = "users"
+
     id: Mapped[UserId] = mapped_column(_UserId, primary_key=True, default=uuid4)
     first_name: Mapped[str] = mapped_column(String(50), nullable=False)
     last_name: Mapped[Optional[str]]

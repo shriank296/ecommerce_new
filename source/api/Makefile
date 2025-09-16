@@ -23,3 +23,6 @@ generate-openapi:
 
 start:
 	poetry run uvicorn app.main:main --factory --reload --host=0.0.0.0 --port=8081	
+
+db_migrate:
+	poetry run alembic revision --autogenerate -m "$(MSG)" 
