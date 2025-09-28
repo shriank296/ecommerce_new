@@ -81,6 +81,29 @@ class BaseRepository(Generic[Model, Key, InputDTO]):
         stmt = select(self.model).where(*args)
         return self._session.execute(stmt).scalars().all()
 
+    def get_one(self, *args: ColumnExpressionArgument[bool]) -> Model | None:
+        """Get one matching record that match the filter.
+
+        Args:
+            *args: Column filters, all filters are 'AND' claused together, if
+            you need to use an 'OR' statement then wrap two clauses with
+            `sqlalchemy.or_`.
+            Example:
+            for sqlalchemy import and_
+            arg = and_(M.SomeModel.id == id, M.SomeModel.risk_id == risk_id)
+
+            or
+
+            arg = M.SomeModel.id == id
+
+            stored_data = uow.some_repo.list(arg)
+
+        Returns:
+            One model matching filter.
+        """
+        stmt = select(self.model).where(*args)
+        return self._session.execute(stmt).scalars().first()
+
     def add(self, input_model: InputDTO, flush: bool = False) -> Model:
         """Add an object to the session.
 

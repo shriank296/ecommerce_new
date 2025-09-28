@@ -27,6 +27,8 @@ class AppSettings(BaseSettings):
     SB_NAMESPACE: str
     SB_TOPIC: str
     SB_SUBSCRIPTION: str
+    SECRET_KEY: str
+    ALGORITHM: str
 
     @property
     def IN_AZURE(self) -> bool:

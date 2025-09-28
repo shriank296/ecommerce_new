@@ -12,6 +12,8 @@ class BaseUser(BaseModel):
     phone: str
     address: dict
     role: str
+    created_by: str
+    updated_by: str
 
 
 class User(BaseUser):

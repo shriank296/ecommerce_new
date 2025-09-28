@@ -26,3 +26,6 @@ start:
 
 db_migrate:
 	poetry run alembic revision --autogenerate -m "$(MSG)" 
+
+db_upgrade:
+	poetry run alembic upgrade head
