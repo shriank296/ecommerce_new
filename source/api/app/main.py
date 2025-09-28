@@ -23,6 +23,7 @@ from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from prometheus_fastapi_instrumentator import Instrumentator
 from psycopg2.errors import OperationalError
+from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
 
 logger = logging.getLogger(__name__)
@@ -43,6 +44,7 @@ def main() -> FastAPI:
     from app.common.logging import build_logger
     from app.exception_handlers import (
         generic_exception_handler,
+        integrity_error_handler,
         method_not_allowed_handler,
         server_unavailable_handler,
         validation_exception_handler,
@@ -59,6 +61,7 @@ def main() -> FastAPI:
     app.add_exception_handler(E.RaisableHTTPException, generic_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(RequestValidationError, validation_exception_handler)  # type: ignore[arg-type]
     app.add_exception_handler(OperationalError, server_unavailable_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(IntegrityError, integrity_error_handler)  # type: ignore[arg-type]
     app.add_exception_handler(
         status.HTTP_405_METHOD_NOT_ALLOWED, method_not_allowed_handler  # type: ignore[arg-type]
     )

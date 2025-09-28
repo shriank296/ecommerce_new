@@ -7,6 +7,7 @@ from fastapi import Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from psycopg2.errors import OperationalError
+from sqlalchemy.exc import IntegrityError
 from starlette.exceptions import HTTPException
 from starlette.responses import JSONResponse
 
@@ -148,3 +149,16 @@ def method_not_allowed_handler(request: Request, exc: HTTPException) -> JSONResp
     return JSONResponse(
         jsonable_encoder(body), status_code=status.HTTP_405_METHOD_NOT_ALLOWED
     )
+
+
+def integrity_error_handler(request: Request, exc: IntegrityError) -> JSONResponse:
+    logger.debug("Handling integrity error.")
+    http_status_code = status.HTTP_409_CONFLICT
+    body = ErrorResponse(
+        timestamp=datetime.now(timezone.utc),
+        status=http_status_code,
+        title="Integrity Error",
+        errors=[ErrorDetail(detail="Resource already exists or violates constraints")],
+        path=request.url.path,
+    ).model_dump()
+    return JSONResponse(jsonable_encoder(body), status_code=http_status_code)
