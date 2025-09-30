@@ -45,6 +45,10 @@ def login(
             "description": "Invalid input data",
             "model": ErrorResponse,
         },
+        status.HTTP_409_CONFLICT: {
+            "description": "User with this email already exists",
+            "model": ErrorResponse,
+        },
     },
 )
 def create_user(
