@@ -188,3 +188,47 @@ def test_repository_delete(
 
     num_of_deleted = dummy_repository.delete(expression)
     assert num_of_deleted == QUANTITY
+
+
+@pytest.mark.integration
+def test_repository_update(
+    dummy_repository: DummyTableRepository, dummy_table_factory: DummyTableFactory
+) -> None:
+    # Create
+    dummy_obj = dummy_table_factory.create()
+
+    conditions = [DummyTable.id == dummy_obj.id]
+
+    input_value = {"company": "Ankur LTD", "value": 4}
+
+    updated_res = dummy_repository.update(conditions, input_value)
+
+    assert updated_res[0].company == "Ankur LTD"
+
+
+@pytest.mark.integration
+def test_repository_update_multiple(
+    dummy_repository: DummyTableRepository, dummy_table_factory: DummyTableFactory
+) -> None:
+
+    QUANTITY = 3
+    # Create multiple
+    _ = dummy_table_factory.create_batch(QUANTITY, value=20)
+    dummy_obj_2 = dummy_table_factory.create_batch(QUANTITY, value=10)
+
+    conditions = [DummyTable.value == 20]
+
+    input_values = {"value": 25}
+
+    updated_obj = dummy_repository.update(conditions, input_values)
+
+    assert len(updated_obj) == QUANTITY
+
+    # check that we did not accidently update wrong objects
+
+    condition = [DummyTable.id == a.id for a in dummy_obj_2]
+    expression = or_(*condition)
+
+    returned_obj = dummy_repository.list(expression)
+
+    assert QUANTITY == len([a.value == 20 for a in returned_obj])
