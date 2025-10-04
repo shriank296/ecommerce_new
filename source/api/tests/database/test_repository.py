@@ -124,6 +124,21 @@ def test_repository_get(
 
 
 @pytest.mark.integration
+def test_repository_get_one(
+    dummy_repository: DummyTableRepository, dummy_table_factory: DummyTableFactory
+) -> None:
+
+    # Create an object in the DB.
+    dummy_obj = dummy_table_factory.create(value=30)
+
+    expression = DummyTable.value == dummy_obj.value
+    # Fetch it out using our repo.
+    stored_obj = dummy_repository.get_one(expression)
+
+    assert dummy_obj == stored_obj
+
+
+@pytest.mark.integration
 def test_repository_add_get(dummy_repository: DummyTableRepository) -> None:
     new_dummy_object = DummyTableDTO(
         id=37182, company="Kostas LTD", value=3, potato=Potato.COOKED

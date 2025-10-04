@@ -10,7 +10,7 @@ test:
 	poetry run python -m pytest -vv tests
 
 test-ci:
-	poetry run python -m pytest -vv tests -m '' --cov=app --cov-report=term-missing --cov-report=xml:/tmp/
+	poetry run python -m pytest -vv tests -m '' --cov=app --cov-report=term-missing --cov-report=xml:/tmp/coverage.xml
 
 build:
 	docker build -f $(DOCKERFILE) .
