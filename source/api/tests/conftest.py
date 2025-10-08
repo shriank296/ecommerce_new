@@ -76,11 +76,12 @@ SB_CONFIG = {
 
 @pytest.fixture(scope="session")
 def postgresql() -> Generator[connection]:
-    postgresql = PostgresContainer("postgres:16-alpine", dbname="test-db")
+    postgresql = PostgresContainer("postgres:16-alpine", dbname="test_db")
     postgresql.start()
 
     def load_database_from_models(db_connection: connection) -> None:
         """Create a test database from our alembic models."""
+        print(f"db_connection: {db_connection.info.dsn_parameters}")
         dsn = build_postgres_dsn(
             password=postgresql.password, **db_connection.info.dsn_parameters
         )
@@ -108,7 +109,7 @@ def postgresql() -> Generator[connection]:
         dbname=postgresql.dbname,
         user=postgresql.username,
         password=postgresql.password,
-        host=postgresql.get_container_host_ip,
+        host=postgresql.get_container_host_ip(),
         port=postgresql.get_exposed_port(5432),
     )
     load_database_from_models(db_connection)
@@ -120,6 +121,17 @@ def _db(postgresql: connection) -> Generator[Engine]:
     """Internal fixture used within the `conftest.py`.
     DO NOT USE THIS FIXTURE IN THE TESTS.
     """
+    # params = postgresql.info.dsn_parameters
+
+    # logger.debug(f"dsn is: {dsn}")
+
+    # dsn = build_postgres_dsn(
+    #     params["host"],
+    #     params["port"],
+    #     params["user"],
+    #     params.get("password", ""),  # password might not always appear here
+    #     params["dbname"],
+    # )
     dsn = build_postgres_dsn(
         "127.0.0.1",
         str(postgresql.info.port),
@@ -255,6 +267,4 @@ def faker() -> Faker:
 
 
 # Import our other fixtures.
-# pytest_plugins = [
-#     "tests.widgets.fixtures"
-# ]
+pytest_plugins = ["tests.users.fixtures"]

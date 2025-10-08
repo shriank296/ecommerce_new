@@ -47,7 +47,7 @@ class Potato(Enum):
 
 class DummyTable(Base):
     __tablename__ = "testings"
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
     company: Mapped[str] = mapped_column(String(50))
     value: Mapped[int]
     potato: Mapped[Potato]
@@ -94,7 +94,7 @@ def dummy_table_builder(
 
 
 class DummyTableDTO(BaseModel):
-    id: int
+    id: int | None = None
     company: str
     value: int
     potato: Potato
@@ -146,6 +146,22 @@ def test_repository_add_get(dummy_repository: DummyTableRepository) -> None:
     added_object = dummy_repository.add(new_dummy_object)
     returned_obj = dummy_repository.get(new_dummy_object.id)
     assert returned_obj == added_object
+
+
+@pytest.mark.integration
+def test_repository_add_multiple(dummy_repository: DummyTableRepository) -> None:
+    QUANTITY = 5
+    dummy_obj_iterable = [
+        DummyTableDTO(
+            company=f"test_company_{i}",
+            value=i + QUANTITY,
+            potato=random.choice(list(Potato)),
+        )
+        for i in range(QUANTITY)
+    ]
+    added_objects = dummy_repository.bulk_add(dummy_obj_iterable)
+    retrieve_objects = dummy_repository.list()
+    assert set(added_objects).issubset(retrieve_objects)
 
 
 @pytest.mark.integration

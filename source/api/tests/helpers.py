@@ -37,6 +37,7 @@ def build_postgres_dsn(
             scheme="postgresql",
             host=host,
             port=int(port),
+            username=user,
             password=password,
             path=dbname,
         )

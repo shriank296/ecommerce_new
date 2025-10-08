@@ -11,7 +11,7 @@ more at https://mypy.readthedocs.io/en/stable/generics.html
 """
 
 from datetime import datetime, timezone
-from typing import Any, Generic, Protocol, Sequence, TypeVar
+from typing import Any, Generic, Iterable, Protocol, Sequence, TypeVar
 
 from pydantic import BaseModel
 from sqlalchemy import delete, select, update
@@ -33,6 +33,7 @@ class BaseRepositoryProtocol(Protocol[Model, _Key, InputDTO]):
     def get(self, pk: _Key) -> Model | None: ...
     def list(self, *args: ColumnExpressionArgument[bool]) -> Sequence[Model]: ...
     def add(self, input_model: InputDTO) -> Model: ...
+    def bulk_add(self, input_models: Iterable[InputDTO]) -> Sequence[Model]: ...
     def delete(self, *args: ColumnExpressionArgument[bool]) -> int: ...
     def update(
         self,
@@ -128,6 +129,28 @@ class BaseRepository(Generic[Model, Key, InputDTO]):
             self._session.flush()
 
         return _model
+
+    def bulk_add(
+        self,
+        input_models: Iterable[InputDTO],
+        flush: bool = False,
+    ) -> Sequence[Model]:
+        """Bulk add multiple objects to the session.
+
+        Args:
+            input_models: Iterable of Pydantic DTOs to insert.
+            flush: Whether to flush after adding (useful to get generated IDs).
+
+        Returns:
+            List of ORM model instances added to the session.
+        """
+        models = [self.model(**dto.model_dump()) for dto in input_models]
+        self._session.add_all(models)
+
+        if flush:
+            self._session.flush()
+
+        return models
 
     def delete(self, *args: ColumnExpressionArgument[bool]) -> int:
         """Delete records which match the filter.

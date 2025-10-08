@@ -25,6 +25,6 @@ class User(BaseUser):
 
 
 class CreateUser(BaseUser):
-    password: str
+    _password: str
 
     model_config = ConfigDict(from_attributes=True)
