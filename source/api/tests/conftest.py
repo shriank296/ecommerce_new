@@ -17,9 +17,9 @@ from testcontainers.postgres import PostgresContainer
 
 from alembic import command, script
 from alembic.config import Config
+from app.common.security import get_current_user
 from app.database.session import RootSession, get_database_session, get_engine
 from app.main import main
-from app.sb.client import get_sb_client
 from app.settings import (
     AppSettings,
     ExternalApiSettings,
@@ -180,7 +180,7 @@ def _app(_db: Engine, test_session: RootSession) -> FastAPI:
     """
 
     # This is here to rewrite the lazy session handlers everywhere.
-    assert test_session.execute(text("select 1+1")).scalars.one() == 2
+    assert test_session.execute(text("select 1 + 1")).scalars().one() == 2
 
     os.environ["ENVIRONMENT"] = "testing"
 
@@ -222,7 +222,7 @@ def external_settings_override() -> ExternalApiSettings:
 def _api_client_base(
     _app: FastAPI,
     _db: Engine,
-    _sb: ServiceBusClient,
+    # _sb: ServiceBusClient,
     dev_settings_override: AppSettings,
     external_settings_override: ExternalApiSettings,
 ) -> TestClient:
@@ -235,9 +235,31 @@ def _api_client_base(
         lambda: external_settings_override
     )
     client.app.dependency_overrides[get_engine] = lambda: _db
-    client.app.dependency_overrides[get_sb_client] = lambda: _sb
+    # client.app.dependency_overrides[get_sb_client] = lambda: _sb
 
     return client
+
+
+@pytest.fixture(scope="function")
+def api_admin_client(_api_client_base, admin_user):
+    _api_client_base.app.dependency_overrides[get_current_user] = lambda: admin_user
+    return _api_client_base
+
+
+@pytest.fixture(scope="function")
+def api_customer_client(_api_client_base, customer_user):
+    _api_client_base.app.dependency_overrides[get_current_user] = lambda: customer_user
+    return _api_client_base
+
+
+@pytest.fixture(scope="function")
+def admin_user():
+    return {"user_name": "test_user", "role": "ADMIN"}
+
+
+@pytest.fixture(scope="function")
+def customer_user():
+    return {"user_name": "test_user", "role": "CUSTOMER"}
 
 
 @pytest.fixture(scope="session")

@@ -14,10 +14,14 @@ from app.database.base import Base
 from app.database.models import CreatedMixin, UpdateMixin
 from app.users import UserId, _UserId
 
+# class UserRole(Enum):
+#     CUSTOMER = "customer"
+#     ADMIN = "admin"
 
-class UserRole(Enum):
-    CUSTOMER = "customer"
-    ADMIN = "admin"
+
+class UserRole(str, Enum):
+    CUSTOMER = "CUSTOMER"
+    ADMIN = "ADMIN"
 
 
 class User(Base, CreatedMixin, UpdateMixin):

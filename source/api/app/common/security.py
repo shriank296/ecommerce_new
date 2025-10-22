@@ -1,7 +1,20 @@
+import logging
 from abc import ABC, abstractmethod
 from datetime import datetime, timedelta
+from functools import wraps
+from typing import cast
 
-from jose import jwt
+from fastapi import Depends, Request
+from fastapi.security import OAuth2PasswordBearer
+from jose import JWTError, jwt  # type: ignore[import]
+
+from app.settings import get_app_settings
+from app.users.expections import InvalidTokenError, UserNotAuthorized
+
+app_settings = get_app_settings()
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token/")
+
+logger = logging.getLogger(__name__)
 
 
 class TokenService(ABC):
@@ -33,5 +46,54 @@ class JWTTokenService(TokenService):
         to_encode.update({"exp": int(expire.timestamp())})
         return jwt.encode(to_encode, self.secret_key, algorithm=self.algorithm)
 
-    def decode_token(self, token: str) -> dict:
-        return jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+    def decode_token(self, token: str) -> dict[str, str]:
+        decoded = jwt.decode(token, self.secret_key, algorithms=[self.algorithm])
+        return cast(dict[str, str], decoded)
+
+
+token_service = JWTTokenService(
+    algorithm=app_settings.ALGORITHM, secret_key=app_settings.SECRET_KEY
+)
+
+
+def get_token_service() -> TokenService:
+    """Returns singleton JWT service instance for FASTAPI routes."""
+    return token_service
+
+
+def get_current_user(
+    request: Request,
+    token: str = Depends(oauth2_scheme),
+    token_service: TokenService = Depends(get_token_service),
+):
+    try:
+        payload = token_service.decode_token(token)
+        user_name: str | None = payload.get("sub")
+        role: str | None = payload.get("role")
+
+        if not user_name or not role:
+            logger.warning("Invalid token payload: missing sub or role.")
+            raise InvalidTokenError(path=request.url.path)
+
+        # Return user info (or fetch from DB if needed)
+        return {"user_name": user_name, "role": role}
+
+    except JWTError:
+        logger.warning(f"JWT decoding failed for {request.url.path}")
+        raise InvalidTokenError(path=request.url.path)
+
+
+def require_role(role: str):
+    def decorator(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            current_user = kwargs.get("current_user")
+            if not current_user:
+                raise UserNotAuthorized
+            if current_user.get("role") == role:
+                return func(*args, **kwargs)
+            raise UserNotAuthorized
+
+        return wrapper
+
+    return decorator

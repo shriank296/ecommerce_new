@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from app.users import UserId
 
@@ -25,6 +25,6 @@ class User(BaseUser):
 
 
 class CreateUser(BaseUser):
-    _password: str
+    password: str = Field(alias="_password")
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)

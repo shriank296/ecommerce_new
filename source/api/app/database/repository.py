@@ -10,14 +10,16 @@ BaseRepository class and provide basic methods to interact with a db.
 more at https://mypy.readthedocs.io/en/stable/generics.html
 """
 
+import math
 from datetime import datetime, timezone
 from typing import Any, Generic, Iterable, Protocol, Sequence, TypeVar
 
 from pydantic import BaseModel
-from sqlalchemy import delete, select, update
+from sqlalchemy import delete, func, select, update
 from sqlalchemy.sql import column
 from sqlalchemy.sql.expression import ColumnExpressionArgument, and_
 
+from app.common.schemas import CamelMode
 from app.database import RootSession
 
 _Key = TypeVar("_Key", contravariant=True)
@@ -25,6 +27,18 @@ Model = TypeVar("Model", covariant=True)
 InputDTO = TypeVar("InputDTO", contravariant=True, bound=BaseModel)
 
 Key = TypeVar("Key")
+
+
+class PaginatedMeta(CamelMode):
+    page_number: int
+    page_size: int
+    total_items: int
+    total_pages: int
+
+
+class PaginatedResponse(CamelMode, Generic[Model]):
+    meta: PaginatedMeta
+    records: Sequence[Model]
 
 
 class BaseRepositoryProtocol(Protocol[Model, _Key, InputDTO]):
@@ -113,7 +127,7 @@ class BaseRepository(Generic[Model, Key, InputDTO]):
         should create a `serialisation_model` type(e.g. Pydantic DTO) and
         have that passed across the boundary.
 
-        Args:
+        Args:        n
             model: object to add to the session.
 
         KWargs:
@@ -129,6 +143,52 @@ class BaseRepository(Generic[Model, Key, InputDTO]):
             self._session.flush()
 
         return _model
+
+    def list_paged(
+        self, page: int, *args: ColumnExpressionArgument[bool], page_size: int = 50
+    ) -> PaginatedResponse:
+        """List all matching records that match the filter, returns paged output.
+        Args:
+            page: page number to return result for
+            *args: Column filters, all filters are 'AND' claused together, if
+            you need to use an 'OR' statement then wrap two clauses with
+            `sqlalchemy.or_`.
+            Example:
+            for sqlalchemy import and_
+            arg = and_(M.SomeModel.id == id, M.SomeModel.risk_id == risk_id)
+
+            or
+
+            arg = M.SomeModel.id == id
+
+            stored_data = uow.some_repo.list(arg)
+        Kwargs:
+            page_size: numberof records to store per page.
+        Returns:
+            Sequence of models matching the filter.
+        """
+        # First page isn't the first.
+        page -= 1
+        total_items = (
+            self._session.execute(select(func.count("*")).where(*args)).scalars().one()
+        )
+        matching_records = (
+            self._session.execute(
+                select(self.model)
+                .where(*args)
+                .limit(page_size)
+                .offset(page_size * page)
+            )
+            .scalars()
+            .all()
+        )
+        meta = PaginatedMeta(
+            total_items=total_items,
+            total_pages=math.ceil(total_items / page_size),
+            page_number=page + 1,
+            page_size=page_size,
+        )
+        return PaginatedResponse(meta=meta, records=matching_records)
 
     def bulk_add(
         self,

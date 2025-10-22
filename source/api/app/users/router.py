@@ -5,16 +5,17 @@ Provides external access to Users domain.
 
 import logging
 
-from fastapi import Depends, Form, HTTPException, Request, status
+from fastapi import Depends, Form, Request, status
 
 from app.common.router import APIRouter
-from app.common.schemas import ErrorResponse
+from app.common.schemas import ErrorDetail, ErrorResponse
+from app.common.security import get_current_user, get_token_service, require_role
 from app.database import RootSession
 from app.database.session import get_database_session, session_manager
-from app.extensions import get_token_service
 from app.users import UserId
 from app.users import expections as E
 from app.users import schemas as S
+from app.users.models import UserRole
 
 logger = logging.getLogger(__name__)
 
@@ -23,6 +24,7 @@ user_router = APIRouter(include_in_schema=True, tags=["Users"])
 
 @user_router.post("/login")
 def login(
+    request: Request,
     email: str = Form(...),
     password: str = Form(...),
     db_session: RootSession = Depends(get_database_session),
@@ -33,7 +35,12 @@ def login(
         if user:
             token = jwt_service.create_token(user_name=email, role=user.role)
             return {"token": token, "token_type": "bearer"}
-        raise HTTPException(status_code=401, detail="Invalid credential")
+        raise E.UserNotAuthenticated(
+            title="Unable to authenticate user.",
+            http_status_code=status.HTTP_401_UNAUTHORIZED,
+            errors=[ErrorDetail(detail="Username or password is not valid.")],
+            path=request.url.path,
+        )
 
 
 @user_router.post(
@@ -51,10 +58,12 @@ def login(
         },
     },
 )
+@require_role(UserRole.ADMIN)
 def create_user(
     user: S.CreateUser,
     request: Request,
     db_session: RootSession = Depends(get_database_session),
+    current_user: dict = Depends(get_current_user),
 ) -> S.User:
     """Create new user."""
     with session_manager(db_session) as uow:

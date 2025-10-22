@@ -25,7 +25,7 @@ class AzureServiceBusEmulator(DockerContainer):
         sql_container = SqlServerContainer(
             "mcr.microsoft.com/mssql/server:2022-latest", password=PASSWORD
         )
-        sql_container.with_env("ACCEPt_EULA", "Y")
+        sql_container.with_env("ACCEPT_EULA", "Y")
         sql_container.with_env("SA_PASSWORD", "potatopotato1!")
         sql_container.with_network(network)
         sql_container.with_exposed_ports(1433)

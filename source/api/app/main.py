@@ -46,9 +46,11 @@ def main() -> FastAPI:
         generic_exception_handler,
         integrity_error_handler,
         method_not_allowed_handler,
+        rbac_error_handler,
         server_unavailable_handler,
         validation_exception_handler,
     )
+    from app.users.expections import UserNotAuthorized
     from app.users.router import user_router
 
     app = FastAPI(
@@ -65,6 +67,7 @@ def main() -> FastAPI:
     app.add_exception_handler(
         status.HTTP_405_METHOD_NOT_ALLOWED, method_not_allowed_handler  # type: ignore[arg-type]
     )
+    app.add_exception_handler(UserNotAuthorized, rbac_error_handler)  # type: ignore[arg-type]
 
     if os.environ.get("ENVIRONMENT") != "testing":
         # trace is a singleton.

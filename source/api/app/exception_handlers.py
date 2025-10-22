@@ -13,6 +13,7 @@ from starlette.responses import JSONResponse
 
 from app.common import exceptions as E
 from app.common.schemas import ErrorDetail, ErrorResponse
+from app.users.expections import UserNotAuthorized
 
 logger = logging.getLogger(__name__)
 
@@ -162,3 +163,21 @@ def integrity_error_handler(request: Request, exc: IntegrityError) -> JSONRespon
         path=request.url.path,
     ).model_dump()
     return JSONResponse(jsonable_encoder(body), status_code=http_status_code)
+
+
+def rbac_error_handler(request: Request, exc: UserNotAuthorized) -> JSONResponse:
+    logger.warning(
+        f"RBAC violation: user not authorized for {request.method} {request.url.path}"
+    )
+
+    http_status_code = status.HTTP_403_FORBIDDEN
+
+    body = ErrorResponse(
+        timestamp=datetime.now(timezone.utc),
+        status=http_status_code,
+        title="Forbidden",
+        errors=[ErrorDetail(detail="User is not authorized to perform this action.")],
+        path=request.url.path,
+    ).model_dump()
+
+    return JSONResponse(content=jsonable_encoder(body), status_code=http_status_code)
