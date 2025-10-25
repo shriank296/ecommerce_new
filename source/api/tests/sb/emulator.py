@@ -49,12 +49,12 @@ class AzureServiceBusEmulator(DockerContainer):
         ).with_network(
             network
         ).with_env(
-            "SQL_WAIT_INTERNAL", "0"
+            "SQL_WAIT_INTERVAL", "0"
         )
 
     def start(self) -> Self:
         super().start()
-        wait_for_logs(self, "Emulator Services is successfully Up", timeout=300)
+        wait_for_logs(self, "Emulator Service is Successfully Up", timeout=300)
         return self
 
     def get_connection_string(self) -> str:
