@@ -48,10 +48,10 @@ SB_CONFIG = {
                         "Name": TOPIC,
                         "Properties": {
                             "DefaultMessageTimeToLive": "PT1H",
-                            "DuplicateDetecionHistoryTimeWindow": "PT20S",
-                            "RequireDuplicateDetecion": False,
+                            "DuplicateDetectionHistoryTimeWindow": "PT20S",
+                            "RequireDuplicateDetection": False,
                         },
-                        "Subscritptions": [
+                        "Subscriptions": [
                             {
                                 "Name": SUBSCRIPTION,
                                 "Properties": {
@@ -61,7 +61,7 @@ SB_CONFIG = {
                                     "MaxDeliveryCount": 10,
                                     "ForwardDeadLetteredMessagesTo": "",
                                     "ForwardTo": "",
-                                    "RequireSession": False,
+                                    "RequiresSession": False,
                                 },
                                 "Rules": [],
                             },
@@ -82,7 +82,7 @@ def postgresql() -> Generator[connection]:
 
     def load_database_from_models(db_connection: connection) -> None:
         """Create a test database from our alembic models."""
-        print(f"db_connection: {db_connection.info.dsn_parameters}")
+
         dsn = build_postgres_dsn(
             password=postgresql.password, **db_connection.info.dsn_parameters
         )
@@ -227,7 +227,7 @@ def _api_client_base(
     dev_settings_override: AppSettings,
     external_settings_override: ExternalApiSettings,
 ) -> TestClient:
-    """Function scoped test c;ient that returns a new client each call."""
+    """Function scoped test client that returns a new client each call."""
 
     client = TestClient(_app, base_url=dev_settings_override.SERVER_API_DOMAIN)
 
