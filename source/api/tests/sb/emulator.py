@@ -38,7 +38,7 @@ class AzureServiceBusEmulator(DockerContainer):
             f.write(json.dumps(config))
         self.with_volume_mapping(
             str(tempdir), "/ServiceBus_Emulator/ConfigFiles", mode="ro"
-        ).with_env("SQL SERVER", "sql").with_env(
+        ).with_env("SQL_SERVER", "sql").with_env(
             "MSSQL_SA_PASSWORD", PASSWORD
         ).with_env(
             "ACCEPT_EULA", "Y"

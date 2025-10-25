@@ -20,6 +20,7 @@ from alembic.config import Config
 from app.common.security import get_current_user
 from app.database.session import RootSession, get_database_session, get_engine
 from app.main import main
+from app.sb.client import get_sb_client
 from app.settings import (
     AppSettings,
     ExternalApiSettings,
@@ -222,7 +223,7 @@ def external_settings_override() -> ExternalApiSettings:
 def _api_client_base(
     _app: FastAPI,
     _db: Engine,
-    # _sb: ServiceBusClient,
+    _sb: ServiceBusClient,
     dev_settings_override: AppSettings,
     external_settings_override: ExternalApiSettings,
 ) -> TestClient:
@@ -235,7 +236,7 @@ def _api_client_base(
         lambda: external_settings_override
     )
     client.app.dependency_overrides[get_engine] = lambda: _db
-    # client.app.dependency_overrides[get_sb_client] = lambda: _sb
+    client.app.dependency_overrides[get_sb_client] = lambda: _sb
 
     return client
 

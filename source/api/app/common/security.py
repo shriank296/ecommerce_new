@@ -8,6 +8,8 @@ from fastapi import Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt  # type: ignore[import]
 
+from app.database import RootSession
+from app.database.session import get_database_session, session_manager
 from app.settings import get_app_settings
 from app.users.expections import InvalidTokenError, UserNotAuthorized
 
@@ -65,6 +67,7 @@ def get_current_user(
     request: Request,
     token: str = Depends(oauth2_scheme),
     token_service: TokenService = Depends(get_token_service),
+    db_session: RootSession = Depends(get_database_session),
 ):
     try:
         payload = token_service.decode_token(token)
@@ -73,6 +76,10 @@ def get_current_user(
 
         if not user_name or not role:
             logger.warning("Invalid token payload: missing sub or role.")
+            raise InvalidTokenError(path=request.url.path)
+        with session_manager(db_session) as uow:
+            user = uow.users.get_one(uow.users.model.email == user_name)
+        if not user:
             raise InvalidTokenError(path=request.url.path)
 
         # Return user info (or fetch from DB if needed)
