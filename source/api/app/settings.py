@@ -35,7 +35,7 @@ class AppSettings(BaseSettings):
     SMTP_HOST: str = "smtp.gmail.com"
     SMTP_PORT: int = 587
     SMTP_USER: str = "amritaankur296@gmail.com"
-    SMTP_PASSWORD: str = "wncc thjr euak moiu"
+    SMTP_PASSWORD: str
     SMTP_FROM: EmailStr = "noreply@example.com"
 
     @property
