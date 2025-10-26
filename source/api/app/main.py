@@ -5,8 +5,10 @@ ATTENTION: DO NOT IMPORT ANYTHING FROM APP CONTEXT WITHIN THE MAIN
 SCOPE OF THIS MODULE. DOING SO IS LIKELY TO ADD RACES.
 """
 
+import asyncio
 import logging
 import os
+from contextlib import asynccontextmanager
 
 from azure.servicebus.exceptions import ServiceBusError
 from fastapi import FastAPI, status
@@ -26,6 +28,8 @@ from prometheus_fastapi_instrumentator import Instrumentator
 from psycopg2.errors import OperationalError
 from sqlalchemy.exc import IntegrityError
 from starlette.responses import JSONResponse
+
+from app.users.services import consume_user_created_events
 
 logger = logging.getLogger(__name__)
 
@@ -55,7 +59,28 @@ def main() -> FastAPI:
     from app.users.expections import UserNotAuthorized
     from app.users.router import user_router
 
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        # Startup
+        if os.environ.get("ENVIRONMENT") != "testing":
+            logger.info("Starting Service Bus consumer task...")
+            task = asyncio.create_task(consume_user_created_events())
+        else:
+            task = None
+
+        yield  # <-- App runs here
+
+        # Shutdown
+        if task:
+            logger.info("Stopping Service Bus consumer task...")
+            task.cancel()
+            try:
+                await task
+            except asyncio.CancelledError:
+                logger.info("Consumer stopped gracefully.")
+
     app = FastAPI(
+        lifespan=lifespan,
         default_response_class=JSONResponse,
         openapi_url="/api/openapi.json",
         swagger_ui_parameters={"docExpansion": "none"},

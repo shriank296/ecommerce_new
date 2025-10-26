@@ -5,7 +5,7 @@ Don't forget to include these within the test dependecy overrides.
 
 from typing import Literal
 
-from pydantic import SecretStr
+from pydantic import EmailStr, SecretStr
 from pydantic_settings import BaseSettings
 
 
@@ -32,6 +32,11 @@ class AppSettings(BaseSettings):
     SECRET_KEY: str
     ALGORITHM: str
     SB_ECOMMERCE_USER_CREATED_TOPIC: str
+    SMTP_HOST: str = "smtp.gmail.com"
+    SMTP_PORT: int = 587
+    SMTP_USER: str = "amritaankur296@gmail.com"
+    SMTP_PASSWORD: str = "wncc thjr euak moiu"
+    SMTP_FROM: EmailStr = "noreply@example.com"
 
     @property
     def IN_AZURE(self) -> bool:
