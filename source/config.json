@@ -1,37 +1,45 @@
 {
-    "UserConfig":{
-        "Namespaces":[
-            {
-                "Name": "sbemulatorns",
-                "Queues":[],
-                "Topics":[
-                    {
-                        "Name": "topic-1",
-                        "Properties":{
-                            "DefaultMessageTimeToLive": "PT1H",
-                            "DuplicateDetectionHistoryTimeWindow": "PT20S",
-                            "RequiresDuplicateDetection": false
-                        },
-                        "Subscriptions":[
-                            {
-                                "Name": "subscription-1",
-                                "Properties":{
-                                    "DeadLetterOnMessageExpiration": false,
-                                    "DefaultMessageTimeToLive": "PT1H",
-                                    "LockDuration": "PT1M",
-                                    "MaxDeliveryCount": 10,
-                                    "ForwardDeadLetteredMessagesTo": "",
-                                    "ForwardTo": "",
-                                    "RequireSession": false
-                                }
-                            }
-                        ]
+  "UserConfig": {
+    "Namespaces": [
+      {
+        "Name": "sbemulatorns",
+        "Queues": [],
+        "Topics": [
+          {
+            "Name": "user-created",
+            "Properties": {
+              "DefaultMessageTimeToLive": "PT1H",
+              "DuplicateDetectionHistoryTimeWindow": "PT20S",
+              "RequiresDuplicateDetection": false
+            },
+            "Subscriptions": [
+              {
+                "Name": "user-created-subscription",
+                "Properties": {
+                  "DeadLetterOnMessageExpiration": false,
+                  "DefaultMessageTimeToLive": "PT1H",
+                  "LockDuration": "PT1M",
+                  "MaxDeliveryCount": 10,
+                  "ForwardDeadLetteredMessagesTo": "",
+                  "ForwardTo": "",
+                  "RequiresSession": false
+                },
+                "Rules": [
+                  {
+                    "Name": "UserCreatedFilter",
+                    "Filter": {
+                      "SqlExpression": "eventType = 'UserCreated'"
                     }
+                  }
                 ]
-            }
-        ],
-        "Logging":{
-            "Type": "File"
-        }
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "Logging": {
+      "Type": "File"
     }
+  }
 }

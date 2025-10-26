@@ -8,6 +8,7 @@ SCOPE OF THIS MODULE. DOING SO IS LIKELY TO ADD RACES.
 import logging
 import os
 
+from azure.servicebus.exceptions import ServiceBusError
 from fastapi import FastAPI, status
 from fastapi.exceptions import RequestValidationError
 from fastapi.openapi.utils import get_openapi
@@ -48,6 +49,7 @@ def main() -> FastAPI:
         method_not_allowed_handler,
         rbac_error_handler,
         server_unavailable_handler,
+        servicebus_exception_handler,
         validation_exception_handler,
     )
     from app.users.expections import UserNotAuthorized
@@ -68,6 +70,7 @@ def main() -> FastAPI:
         status.HTTP_405_METHOD_NOT_ALLOWED, method_not_allowed_handler  # type: ignore[arg-type]
     )
     app.add_exception_handler(UserNotAuthorized, rbac_error_handler)  # type: ignore[arg-type]
+    app.add_exception_handler(ServiceBusError, servicebus_exception_handler)  # type: ignore[arg-type]
 
     if os.environ.get("ENVIRONMENT") != "testing":
         # trace is a singleton.

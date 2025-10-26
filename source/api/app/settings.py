@@ -24,11 +24,14 @@ class AppSettings(BaseSettings):
     DB_NAME: str
     AZURE_CLIENT_ID: str | None = None
     DB_PORT: str = "5432"
+
+    # Service bus details
     SB_NAMESPACE: str
-    SB_TOPIC: str
+    # SB_TOPIC: str
     SB_SUBSCRIPTION: str
     SECRET_KEY: str
     ALGORITHM: str
+    SB_ECOMMERCE_USER_CREATED_TOPIC: str
 
     @property
     def IN_AZURE(self) -> bool:

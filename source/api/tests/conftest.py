@@ -35,8 +35,8 @@ logger = logging.getLogger(__name__)
 # Service Bus configuration.
 
 NAMESPACE = "sbemulatorns"
-TOPIC = "test-topic"
-SUBSCRIPTION = "test-subscription"
+TOPIC = "user-created"  # same as in Config.json
+SUBSCRIPTION = "user-created-subscription"
 SB_CONFIG = {
     "UserConfig": {
         "Namespaces": [
@@ -49,7 +49,7 @@ SB_CONFIG = {
                         "Properties": {
                             "DefaultMessageTimeToLive": "PT1H",
                             "DuplicateDetectionHistoryTimeWindow": "PT20S",
-                            "RequireDuplicateDetection": False,
+                            "RequiresDuplicateDetection": False,
                         },
                         "Subscriptions": [
                             {
@@ -208,7 +208,7 @@ def dev_settings_override(postgresql: connection) -> AppSettings:
         DB_PORT=str(postgresql.info.port),
         AZURE_CLIENT_ID="ID",
         SB_NAMESPACE=NAMESPACE,
-        SB_TOPIC=TOPIC,
+        SB_ECOMMERCE_USER_CREATED_TOPIC=TOPIC,
         SB_SUBSCRIPTION=SUBSCRIPTION,
     )
 

@@ -3,6 +3,7 @@ from datetime import datetime, timezone
 from enum import StrEnum
 from functools import cache
 
+from azure.servicebus.exceptions import ServiceBusError
 from fastapi import Request, status
 from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
@@ -181,3 +182,36 @@ def rbac_error_handler(request: Request, exc: UserNotAuthorized) -> JSONResponse
     ).model_dump()
 
     return JSONResponse(content=jsonable_encoder(body), status_code=http_status_code)
+
+
+def servicebus_exception_handler(
+    request: Request, exc: ServiceBusError
+) -> JSONResponse:
+    """Handle Service Bus-related errors."""
+    logger.debug("Handling ServiceBusError exception.")
+
+    title = "Failed to communicate with Azure Service Bus."
+    http_status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+
+    # Try to capture the specific error message from the SDK
+    detail_msg = str(exc) or "Service Bus operation failed."
+
+    logger.error(
+        "Service Bus error",
+        extra={
+            "status_code": http_status_code,
+            "error": title,
+            "exception_type": type(exc).__name__,
+            "exception_detail": detail_msg,
+        },
+    )
+
+    body = ErrorResponse(
+        timestamp=datetime.now(timezone.utc),
+        status=http_status_code,
+        title=title,
+        errors=[ErrorDetail(detail=detail_msg)],
+        path=request.url.path,
+    ).model_dump()
+
+    return JSONResponse(jsonable_encoder(body), status_code=http_status_code)
